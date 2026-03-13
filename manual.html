@@ -1,0 +1,1099 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Manual – Método de la Esquina Noroeste | Investigación de Operaciones I</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap"
+    rel="stylesheet" />
+
+  <style>
+    /* ─── Variables de color ─────────────────────────── */
+    :root {
+      --blue: #1a4f8a;
+      --blue-mid: #2563a8;
+      --blue-lite: #e8f0fb;
+      --green: #1a7a4a;
+      --green-lite: #e6f5ec;
+      --orange: #b45309;
+      --orange-lit: #fef3c7;
+      --gray-dark: #1e293b;
+      --gray-mid: #475569;
+      --gray-lite: #f1f5f9;
+      --border: #cbd5e1;
+      --white: #ffffff;
+    }
+
+    /* ─── Reset / Base ───────────────────────────────── */
+    *,
+    *::before,
+    *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: 'Inter', system-ui, sans-serif;
+      font-size: 11pt;
+      line-height: 1.65;
+      color: var(--gray-dark);
+      background: #fff;
+    }
+
+    /* ─── Página ─────────────────────────────────────── */
+    .page {
+      width: 21cm;
+      min-height: 29.7cm;
+      margin: 0 auto;
+      padding: 2cm 2.2cm;
+      background: white;
+      page-break-after: always;
+    }
+
+    .page:last-child {
+      page-break-after: auto;
+    }
+
+    @media print {
+      body {
+        background: white;
+      }
+
+      .page {
+        width: 100%;
+        margin: 0;
+        padding: 1.8cm 2cm;
+        box-shadow: none;
+      }
+
+      .no-print {
+        display: none !important;
+      }
+    }
+
+    @media screen {
+      body {
+        background: #e2e8f0;
+        padding: 1rem 0;
+      }
+
+      .page {
+        box-shadow: 0 4px 32px rgba(0, 0, 0, 0.12);
+        margin-bottom: 1.5cm;
+        border-radius: 4px;
+      }
+    }
+
+    /* ─── PORTADA ────────────────────────────────────── */
+    .cover {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: space-between;
+      min-height: 25cm;
+      text-align: center;
+    }
+
+    .cover-header {
+      width: 100%;
+      border-bottom: 3px solid var(--blue);
+      padding-bottom: 1rem;
+    }
+
+    .cover-institution {
+      font-size: 10pt;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--blue-mid);
+    }
+
+    .cover-subject {
+      font-size: 9pt;
+      color: var(--gray-mid);
+      margin-top: 0.2rem;
+    }
+
+    .cover-main {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 1.2rem;
+      padding: 2rem 0;
+    }
+
+    .cover-icon {
+      width: 80px;
+      height: 80px;
+      background: var(--blue);
+      border-radius: 18px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 36px;
+    }
+
+    .cover-title {
+      font-size: 28pt;
+      font-weight: 800;
+      color: var(--blue);
+      line-height: 1.15;
+    }
+
+    .cover-subtitle {
+      font-size: 14pt;
+      font-weight: 400;
+      color: var(--gray-mid);
+      max-width: 14cm;
+    }
+
+    .cover-badge {
+      display: inline-block;
+      background: var(--blue-lite);
+      color: var(--blue);
+      font-size: 9pt;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      padding: 0.3rem 1rem;
+      border-radius: 50px;
+      border: 1px solid var(--blue-mid);
+    }
+
+    .cover-divider {
+      width: 60px;
+      height: 4px;
+      background: linear-gradient(90deg, var(--blue), #5b9bd5);
+      border-radius: 99px;
+    }
+
+    .cover-team {
+      width: 100%;
+      border-top: 2px solid var(--border);
+      padding-top: 1.2rem;
+    }
+
+    .team-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 0.4rem 2rem;
+      margin: 0.8rem 0;
+      text-align: left;
+    }
+
+    .team-member {
+      display: flex;
+      align-items: baseline;
+      gap: 0.5rem;
+      font-size: 9.5pt;
+    }
+
+    .team-member .num {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 8pt;
+      color: var(--blue-mid);
+      font-weight: 600;
+    }
+
+    .team-member .name {
+      font-weight: 600;
+      color: var(--gray-dark);
+    }
+
+    .team-member .ci {
+      color: var(--gray-mid);
+      font-size: 8.5pt;
+    }
+
+    .cover-meta {
+      display: flex;
+      justify-content: space-between;
+      font-size: 8.5pt;
+      color: var(--gray-mid);
+      margin-top: 0.6rem;
+    }
+
+    /* ─── Tipografía interior ────────────────────────── */
+    h1.section-title {
+      font-size: 17pt;
+      font-weight: 800;
+      color: var(--blue);
+      border-left: 5px solid var(--blue);
+      padding-left: 0.7rem;
+      margin-bottom: 1rem;
+    }
+
+    h2 {
+      font-size: 13pt;
+      font-weight: 700;
+      color: var(--blue-mid);
+      margin: 1.4rem 0 0.5rem;
+    }
+
+    h3 {
+      font-size: 10.5pt;
+      font-weight: 700;
+      color: var(--gray-dark);
+      margin: 1rem 0 0.3rem;
+    }
+
+    p {
+      margin-bottom: 0.6rem;
+    }
+
+    /* ─── Callout / Alerta ───────────────────────────── */
+    .callout {
+      border-left: 4px solid var(--blue-mid);
+      background: var(--blue-lite);
+      padding: 0.7rem 1rem;
+      border-radius: 0 6px 6px 0;
+      margin: 0.8rem 0;
+      font-size: 10pt;
+    }
+
+    .callout.green {
+      border-color: var(--green);
+      background: var(--green-lite);
+    }
+
+    .callout.orange {
+      border-color: var(--orange);
+      background: var(--orange-lit);
+    }
+
+    .callout strong {
+      display: block;
+      margin-bottom: 0.2rem;
+    }
+
+    /* ─── Definición ─────────────────────────────────── */
+    .definition-box {
+      border: 1.5px solid var(--blue-mid);
+      border-radius: 8px;
+      padding: 0.9rem 1.1rem;
+      margin: 0.8rem 0;
+      background: var(--blue-lite);
+    }
+
+    .definition-box .def-label {
+      font-size: 7.5pt;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      color: var(--blue-mid);
+      margin-bottom: 0.3rem;
+    }
+
+    /* ─── Pasos numerados ────────────────────────────── */
+    .steps {
+      counter-reset: step-counter;
+      list-style: none;
+      padding: 0;
+    }
+
+    .steps li {
+      counter-increment: step-counter;
+      display: flex;
+      gap: 0.8rem;
+      margin-bottom: 0.7rem;
+      align-items: flex-start;
+    }
+
+    .steps li::before {
+      content: counter(step-counter);
+      min-width: 24px;
+      height: 24px;
+      background: var(--blue);
+      color: white;
+      border-radius: 50%;
+      font-size: 9pt;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      margin-top: 2px;
+    }
+
+    /* ─── Tabla ──────────────────────────────────────── */
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 0.8rem 0;
+      font-size: 9.5pt;
+    }
+
+    th {
+      background: var(--blue);
+      color: white;
+      padding: 0.45rem 0.6rem;
+      text-align: center;
+      font-weight: 700;
+      font-size: 8.5pt;
+    }
+
+    td {
+      border: 1px solid var(--border);
+      padding: 0.4rem 0.6rem;
+      text-align: center;
+      vertical-align: middle;
+    }
+
+    tr:nth-child(even) td {
+      background: var(--gray-lite);
+    }
+
+    td.label-cell {
+      background: var(--blue-lite);
+      font-weight: 700;
+      color: var(--blue-mid);
+      text-align: left;
+    }
+
+    td.assigned {
+      background: #d1fae5;
+      font-weight: 800;
+      color: var(--green);
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 10.5pt;
+    }
+
+    td.striked {
+      background: #fef2f2;
+      color: #9ca3af;
+      text-decoration: line-through;
+    }
+
+    /* ─── Código inline ──────────────────────────────── */
+    code {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 9pt;
+      background: var(--gray-lite);
+      border: 1px solid var(--border);
+      padding: 1px 5px;
+      border-radius: 3px;
+    }
+
+    /* ─── Formula math ───────────────────────────────── */
+    .formula {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 10.5pt;
+      background: var(--gray-dark);
+      color: #86efac;
+      padding: 0.6rem 1rem;
+      border-radius: 6px;
+      margin: 0.5rem 0;
+      display: block;
+    }
+
+    /* ─── Dos columnas ───────────────────────────────── */
+    .two-col {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1.2rem;
+      margin: 0.8rem 0;
+    }
+
+    /* ─── Tarjeta pequeña ────────────────────────────── */
+    .mini-card {
+      border: 1.5px solid var(--border);
+      border-radius: 8px;
+      padding: 0.7rem 0.9rem;
+    }
+
+    .mini-card .mc-title {
+      font-size: 9pt;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.07em;
+      color: var(--blue-mid);
+      margin-bottom: 0.4rem;
+    }
+
+    /* ─── Check list ─────────────────────────────────── */
+    .checklist {
+      list-style: none;
+      padding: 0;
+    }
+
+    .checklist li {
+      display: flex;
+      gap: 0.5rem;
+      margin-bottom: 0.35rem;
+      font-size: 10pt;
+    }
+
+    .checklist li::before {
+      content: '✓';
+      color: var(--green);
+      font-weight: 800;
+      flex-shrink: 0;
+    }
+
+    /* ─── Pill / Badge ───────────────────────────────── */
+    .pill {
+      display: inline-block;
+      font-size: 8pt;
+      font-weight: 700;
+      padding: 2px 8px;
+      border-radius: 50px;
+      border: 1px solid;
+    }
+
+    .pill-blue {
+      color: var(--blue);
+      border-color: var(--blue-mid);
+      background: var(--blue-lite);
+    }
+
+    .pill-green {
+      color: var(--green);
+      border-color: var(--green);
+      background: var(--green-lite);
+    }
+
+    .pill-orange {
+      color: var(--orange);
+      border-color: var(--orange);
+      background: var(--orange-lit);
+    }
+
+    /* ─── Encabezado interior de página ─────────────── */
+    .page-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 1px solid var(--border);
+      padding-bottom: 0.4rem;
+      margin-bottom: 1rem;
+      font-size: 8pt;
+      color: var(--gray-mid);
+    }
+
+    .page-header strong {
+      color: var(--blue-mid);
+    }
+
+    /* ─── Pie de página ──────────────────────────────── */
+    .page-footer {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-top: 1px solid var(--border);
+      padding-top: 0.4rem;
+      margin-top: 1.5rem;
+      font-size: 7.5pt;
+      color: var(--gray-mid);
+    }
+
+    /* ─── Botón imprimir (solo pantalla) ─────────────── */
+    .print-btn {
+      position: fixed;
+      top: 1rem;
+      right: 1rem;
+      background: var(--blue);
+      color: white;
+      border: none;
+      border-radius: 8px;
+      padding: 0.6rem 1.2rem;
+      font-family: 'Inter', sans-serif;
+      font-size: 10pt;
+      font-weight: 700;
+      cursor: pointer;
+      box-shadow: 0 4px 16px rgba(26, 79, 138, 0.35);
+      z-index: 9999;
+    }
+
+    .print-btn:hover {
+      background: var(--blue-mid);
+    }
+  </style>
+</head>
+
+<body>
+
+  <!-- ════════════════════════════════════════════════════
+     BOTÓN IMPRIMIR (desaparece al imprimir)
+═════════════════════════════════════════════════════ -->
+  <button class="print-btn no-print" onclick="window.print()">🖨️ Guardar como PDF</button>
+
+
+  <!-- ════════════════════════════════════════════════════
+     PÁGINA 1 – PORTADA
+═════════════════════════════════════════════════════ -->
+  <div class="page">
+    <div class="cover">
+
+
+      <div class="cover-header">
+        <div class="cover-institution">Universidad Politécnica Territorial "José Antonio Anzoátegui"</div>
+      </div>
+
+      <div class="cover-header">
+        <div class="cover-institution">Ingeniería en Informática</div>
+        <div class="cover-subject">Investigación de Operaciones 1</div>
+      </div>
+
+      <div class="cover-main">
+        <div class="cover-icon">📦</div>
+
+        <span class="cover-badge">Proyecto</span>
+
+        <div class="cover-title">Método de la<br>Esquina Noroeste</div>
+
+        <div class="cover-divider"></div>
+
+        <div class="cover-subtitle">
+          Manual del Proyecto<br>
+          Aplicación web para la resolución del problema de transporte, programado en JavaScript, HTML y CSS.
+        </div>
+
+        <p style="font-size:9pt; color:var(--gray-mid); max-width:12cm; text-align:center;">
+          Incluye: fundamento teórico, procedimiento matemático paso a paso,<br>
+          y el uso de la aplicación web.
+        </p>
+      </div>
+
+      <div class="cover-team">
+        <p
+          style="font-size:8.5pt; font-weight:700; color:var(--gray-mid); text-transform:uppercase; letter-spacing:0.08em; margin-bottom:0.5rem;">
+          Integrantes
+        </p>
+        <div class="team-grid">
+          <div class="team-member">
+
+            <span class="name">Nancy Rodríguez</span>
+            <span class="ci">C.I. 12.664.288</span>
+          </div>
+          <div class="team-member">
+
+            <span class="name">Rodilis Zapata</span>
+            <span class="ci">C.I. 19.630.763</span>
+          </div>
+          <div class="team-member">
+
+            <span class="name">Gabriel Azócar</span>
+            <span class="ci">C.I. 19.789.539</span>
+          </div>
+          <div class="team-member">
+
+            <span class="name">Ramon Morao</span>
+            <span class="ci">C.I. 30.545.105</span>
+          </div>
+          <div class="team-member">
+
+            <span class="name">Betzaida Fernandez</span>
+            <span class="ci">C.I. 28.714.596</span>
+          </div>
+        </div>
+        <div class="cover-meta">
+          <span>✦ Docente: <strong>Ing. Leober Urbano</strong></span>
+          <span> <strong>Seccion: IF03, 17 de Marzo de 2026</strong></span>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+
+  <!-- ════════════════════════════════════════════════════
+     PÁGINA 2 – FUNDAMENTO TEÓRICO
+═════════════════════════════════════════════════════ -->
+  <div class="page">
+    <div class="page-header">
+      <strong>Manual – Método de la Esquina Noroeste</strong>
+      <span>Investigación de Operaciones I · IF03 · 2026</span>
+    </div>
+
+    <h1 class="section-title">1. Fundamento Teórico</h1>
+
+    <div class="definition-box">
+      <div class="def-label">📌 Definición — Problema de Transporte</div>
+      <p>
+        El <strong>Problema de Transporte</strong> es un modelo de programación lineal que busca
+        determinar cómo distribuir un bien único desde <em>m</em> orígenes (almacenes, fábricas)
+        hacia <em>n</em> destinos (sucursales, clientes) al <strong>mínimo costo total</strong>,
+        respetando la capacidad de oferta de cada origen y el requerimiento de demanda de cada destino.
+      </p>
+    </div>
+
+    <h2>1.1 Elementos del Modelo</h2>
+
+    <div class="two-col">
+      <div class="mini-card">
+        <div class="mc-title">⚙️ Variables</div>
+        <p><code>x<sub>ij</sub></code> = unidades a transportar del origen <em>i</em> al destino <em>j</em></p>
+        <p><code>c<sub>ij</sub></code> = costo unitario de transporte de <em>i</em> a <em>j</em></p>
+      </div>
+      <div class="mini-card">
+        <div class="mc-title">📊 Parámetros</div>
+        <p><code>s<sub>i</sub></code> = oferta disponible en el origen <em>i</em></p>
+        <p><code>d<sub>j</sub></code> = demanda requerida en el destino <em>j</em></p>
+      </div>
+    </div>
+
+    <h2>1.2 Función Objetivo y Restricciones</h2>
+
+    <code class="formula">
+    Minimizar Z = Σ Σ c<sub>ij</sub> · x<sub>ij</sub>   (para todo i, j)
+  </code>
+    <code class="formula">
+    Sujeto a:  Σ x<sub>ij</sub>  = s<sub>i</sub>   (restricción de oferta – fila)
+               Σ x<sub>ij</sub>  = d<sub>j</sub>   (restricción de demanda – columna)
+               x<sub>ij</sub>  ≥ 0
+  </code>
+
+    <h2>1.3 Condición de Equilibrio</h2>
+    <p>Para que el problema tenga solución directa, la suma de toda la oferta debe ser igual a la suma de toda la
+      demanda:</p>
+    <code class="formula">Σ s<sub>i</sub> = Σ d<sub>j</sub>   →   Problema Equilibrado</code>
+
+    <div class="callout orange">
+      <strong>⚠️ Problema No Equilibrado</strong>
+      Si la oferta total ≠ demanda total, se agrega una fila o columna <em>ficticia (dummy)</em>
+      con costo 0 para equilibrar el modelo antes de aplicar cualquier método.
+    </div>
+
+    <h2>1.4 ¿Qué es el Método de la Esquina Noroeste?</h2>
+    <p>
+      Es una <strong>heurística constructiva</strong> que genera una
+      <em>Solución Básica Factible Inicial (SBFI)</em> para el Problema de Transporte.
+      No garantiza el óptimo, pero proporciona un punto de partida válido para métodos de
+      optimización posteriores (MODI, Stepping-Stone).
+    </p>
+
+    <div class="callout green">
+      <strong>✅ ¿Por qué se llama «Esquina Noroeste»?</strong>
+      Porque siempre comienza asignando en la celda superior-izquierda de la tabla —
+      la esquina que en cartografía corresponde al <em>noroeste</em> — y va avanzando
+      hacia la derecha (→) o hacia abajo (↓) según cuál restricción se satisfaga primero.
+    </div>
+
+    <div class="page-footer">
+      <span>Sección IF03 · Investigación de Operaciones I</span>
+      <span>Pág. 2</span>
+    </div>
+  </div>
+
+
+  <!-- ════════════════════════════════════════════════════
+     PÁGINA 3 – PROCEDIMIENTO PASO A PASO
+═════════════════════════════════════════════════════ -->
+  <div class="page">
+    <div class="page-header">
+      <strong>Manual – Método de la Esquina Noroeste</strong>
+      <span>Investigación de Operaciones I · IF03 · 2026</span>
+    </div>
+
+    <h1 class="section-title">2. Procedimiento Matemático Paso a Paso</h1>
+
+    <h2>2.1 Algoritmo Formal</h2>
+
+    <ol class="steps">
+      <li>
+        <div>
+          <strong>Construir la tabla de transporte.</strong>
+          Ubicar los <em>m</em> orígenes en filas y los <em>n</em> destinos en columnas.
+          Registrar los costos unitarios <code>c<sub>ij</sub></code>, la oferta <code>s<sub>i</sub></code>
+          (columna derecha) y la demanda <code>d<sub>j</sub></code> (fila inferior).
+        </div>
+      </li>
+      <li>
+        <div>
+          <strong>Verificar el equilibrio.</strong>
+          Calcular <code>Σ s<sub>i</sub></code> y <code>Σ d<sub>j</sub></code>.
+          Si son iguales → continuar. Si difieren → agregar fila o columna ficticia con costo 0.
+        </div>
+      </li>
+      <li>
+        <div>
+          <strong>Posicionarse en la Esquina Noroeste.</strong>
+          La celda actual comienza siempre en <code>(i=1, j=1)</code>.
+        </div>
+      </li>
+      <li>
+        <div>
+          <strong>Asignar el mínimo entre oferta y demanda actuales.</strong>
+          <code class="formula">x<sub>ij</sub> = min( s<sub>i</sub> , d<sub>j</sub> )</code>
+          Registrar esta asignación en la celda actual.
+        </div>
+      </li>
+      <li>
+        <div>
+          <strong>Actualizar oferta y demanda.</strong>
+          Restar el valor asignado: <code>s<sub>i</sub> = s<sub>i</sub> − x<sub>ij</sub></code>
+          y <code>d<sub>j</sub> = d<sub>j</sub> − x<sub>ij</sub></code>.
+        </div>
+      </li>
+      <li>
+        <div>
+          <strong>Decidir el movimiento:</strong>
+          <ul style="margin-top:0.3rem; padding-left:1.2rem; line-height:1.8;">
+            <li>Si <code>s<sub>i</sub> = 0</code> y <code>d<sub>j</sub> &gt; 0</code> → mover hacia abajo (↓):
+              <code>i = i + 1</code>
+            </li>
+            <li>Si <code>d<sub>j</sub> = 0</code> y <code>s<sub>i</sub> &gt; 0</code> → mover hacia la derecha (→):
+              <code>j = j + 1</code>
+            </li>
+            <li>Si ambos son 0 → mover diagonal (↓→) solo si quedan celdas por visitar.</li>
+          </ul>
+        </div>
+      </li>
+      <li>
+        <div>
+          <strong>Repetir pasos 4–6</strong> hasta que se hayan satisfecho toda la oferta y toda la demanda
+          (todas las <code>s<sub>i</sub> = 0</code> y todas las <code>d<sub>j</sub> = 0</code>).
+        </div>
+      </li>
+      <li>
+        <div>
+          <strong>Calcular el Costo Total:</strong>
+          <code class="formula">Z = Σ Σ c<sub>ij</sub> · x<sub>ij</sub>   (solo celdas asignadas)</code>
+        </div>
+      </li>
+    </ol>
+
+    <h2>2.2 Ejemplo Resuelto</h2>
+
+    <p>Tres almacenes (<strong>S1, S2, S3</strong>) abastecen a cuatro destinos (<strong>D1, D2, D3, D4</strong>):</p>
+
+    <table>
+      <thead>
+        <tr>
+          <th>Origen \ Destino</th>
+          <th>D1</th>
+          <th>D2</th>
+          <th>D3</th>
+          <th>D4</th>
+          <th style="background:#6b46aa;">Oferta (s<sub>i</sub>)</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td class="label-cell">S1</td>
+          <td>2</td>
+          <td>3</td>
+          <td>1</td>
+          <td>5</td>
+          <td style="background:#ede9fe; font-weight:700; color:#6b46aa;">120</td>
+        </tr>
+        <tr>
+          <td class="label-cell">S2</td>
+          <td>7</td>
+          <td>4</td>
+          <td>6</td>
+          <td>2</td>
+          <td style="background:#ede9fe; font-weight:700; color:#6b46aa;">80</td>
+        </tr>
+        <tr>
+          <td class="label-cell">S3</td>
+          <td>4</td>
+          <td>3</td>
+          <td>8</td>
+          <td>1</td>
+          <td style="background:#ede9fe; font-weight:700; color:#6b46aa;">80</td>
+        </tr>
+        <tr>
+          <td class="label-cell" style="color:#b45309;">Demanda (d<sub>j</sub>)</td>
+          <td style="background:#fef3c7; font-weight:700; color:#b45309;">150</td>
+          <td style="background:#fef3c7; font-weight:700; color:#b45309;">70</td>
+          <td style="background:#fef3c7; font-weight:700; color:#b45309;">60</td>
+          <td style="background:#fef3c7; font-weight:700; color:#b45309;">0</td>
+          <td style="background:#d1fae5; font-weight:800; color:#1a7a4a;">280 = 280 ✓</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <div class="callout green" style="margin-top:0.5rem;">
+      <strong>✅ Equilibrio verificado:</strong>
+      Oferta total = 120 + 80 + 80 = <strong>280</strong> | Demanda total = 150 + 70 + 60 + 0 = <strong>280</strong>
+    </div>
+
+    <div class="page-footer">
+      <span>Sección IF03 · Investigación de Operaciones I</span>
+      <span>Pág. 3</span>
+    </div>
+  </div>
+
+
+  <!-- ════════════════════════════════════════════════════
+     PÁGINA 4 – RESOLUCIÓN DEL EJEMPLO
+═════════════════════════════════════════════════════ -->
+  <div class="page">
+    <div class="page-header">
+      <strong>Manual – Método de la Esquina Noroeste</strong>
+      <span>Investigación de Operaciones I · IF03 · 2026</span>
+    </div>
+
+    <h1 class="section-title">3. Resolución del Ejemplo</h1>
+
+    <h2>3.1 Tabla con Asignaciones (Esquina Noroeste)</h2>
+
+    <table>
+      <thead>
+        <tr>
+          <th>Origen \ Destino</th>
+          <th>D1</th>
+          <th>D2</th>
+          <th>D3</th>
+          <th>D4</th>
+          <th style="background:#6b46aa;">Oferta</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td class="label-cell">S1 (c=2,3,1,5)</td>
+          <td class="assigned">120 ✓</td>
+          <td class="striked">—</td>
+          <td class="striked">—</td>
+          <td class="striked">—</td>
+          <td style="color:#9ca3af; font-size:9pt;">120→0</td>
+        </tr>
+        <tr>
+          <td class="label-cell">S2 (c=7,4,6,2)</td>
+          <td class="assigned">30 ✓</td>
+          <td class="assigned">50 ✓</td>
+          <td class="striked">—</td>
+          <td class="striked">—</td>
+          <td style="color:#9ca3af; font-size:9pt;">80→0</td>
+        </tr>
+        <tr>
+          <td class="label-cell">S3 (c=4,3,8,1)</td>
+          <td class="striked">—</td>
+          <td class="assigned">20 ✓</td>
+          <td class="assigned">60 ✓</td>
+          <td class="assigned">0 ✓</td>
+          <td style="color:#9ca3af; font-size:9pt;">80→0</td>
+        </tr>
+        <tr>
+          <td class="label-cell" style="color:#b45309;">Demanda</td>
+          <td style="background:#fef3c7; font-weight:700; color:#b45309;">150→0</td>
+          <td style="background:#fef3c7; font-weight:700; color:#b45309;">70→0</td>
+          <td style="background:#fef3c7; font-weight:700; color:#b45309;">60→0</td>
+          <td style="background:#fef3c7; font-weight:700; color:#b45309;">0→0</td>
+          <td style="background:#d1fae5;"></td>
+        </tr>
+      </tbody>
+    </table>
+
+    <h2>3.2 Registro de Asignaciones (Paso a Paso)</h2>
+
+    <table>
+      <thead>
+        <tr>
+          <th>Paso</th>
+          <th>Celda</th>
+          <th>Min(s<sub>i</sub>, d<sub>j</sub>)</th>
+          <th>Asignación</th>
+          <th>Costo Unit.</th>
+          <th>Subtotal</th>
+          <th>Movimiento</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><strong>01</strong></td>
+          <td>S1→D1</td>
+          <td>min(120, 150) = <strong>120</strong></td>
+          <td class="assigned">120 u.</td>
+          <td>$2</td>
+          <td><strong>$240</strong></td>
+          <td>↓ (s1 = 0)</td>
+        </tr>
+        <tr>
+          <td><strong>02</strong></td>
+          <td>S2→D1</td>
+          <td>min(80, 30) = <strong>30</strong></td>
+          <td class="assigned">30 u.</td>
+          <td>$7</td>
+          <td><strong>$210</strong></td>
+          <td>→ (d1 = 0)</td>
+        </tr>
+        <tr>
+          <td><strong>03</strong></td>
+          <td>S2→D2</td>
+          <td>min(50, 70) = <strong>50</strong></td>
+          <td class="assigned">50 u.</td>
+          <td>$4</td>
+          <td><strong>$200</strong></td>
+          <td>↓ (s2 = 0)</td>
+        </tr>
+        <tr>
+          <td><strong>04</strong></td>
+          <td>S3→D2</td>
+          <td>min(80, 20) = <strong>20</strong></td>
+          <td class="assigned">20 u.</td>
+          <td>$3</td>
+          <td><strong>$60</strong></td>
+          <td>→ (d2 = 0)</td>
+        </tr>
+        <tr>
+          <td><strong>05</strong></td>
+          <td>S3→D3</td>
+          <td>min(60, 60) = <strong>60</strong></td>
+          <td class="assigned">60 u.</td>
+          <td>$8</td>
+          <td><strong>$480</strong></td>
+          <td>→ (d3 = 0)</td>
+        </tr>
+        <tr>
+          <td><strong>06</strong></td>
+          <td>S3→D4</td>
+          <td>min(0, 0) = <strong>0</strong></td>
+          <td class="assigned">0 u.</td>
+          <td>$1</td>
+          <td><strong>$0</strong></td>
+          <td>— (fin)</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <h2>3.3 Cálculo del Costo Total</h2>
+
+    <code class="formula">
+    Z = (120×2) + (30×7) + (50×4) + (20×3) + (60×8) + (0×1)
+      = 240 + 210 + 200 + 60 + 480 + 0
+      = <strong>$1,190</strong>
+  </code>
+
+    <div class="callout green">
+      <strong>✅ Resultado:</strong>
+      La Solución Básica Factible Inicial obtenida mediante el Método de la Esquina Noroeste
+      tiene un <strong>Costo Total de Transporte = $1,190</strong>.
+      Este valor puede mejorarse con el método MODI o Stepping-Stone, pero constituye
+      un punto de partida válido para el problema.
+    </div>
+
+    <div class="callout">
+      <strong>📐 Número de asignaciones básicas:</strong>
+      Un problema m×n equilibrado siempre producirá exactamente <code>m + n − 1</code> asignaciones básicas.
+      En este caso: <code>3 + 4 − 1 = 6</code> celdas asignadas ✓
+    </div>
+
+    <div class="page-footer">
+      <span>Sección IF03 · Investigación de Operaciones I</span>
+      <span>Pág. 4</span>
+    </div>
+  </div>
+
+
+  <!-- ════════════════════════════════════════════════════
+     PÁGINA 5 – USO DE LA APLICACIÓN
+═════════════════════════════════════════════════════ -->
+  <div class="page">
+    <div class="page-header">
+      <strong>Manual – Método de la Esquina Noroeste</strong>
+      <span>Investigación de Operaciones I · IF03 · 2026</span>
+    </div>
+
+    <h1 class="section-title">4. Uso de la Aplicación Web</h1>
+
+    <div class="callout">
+      <strong>🌐 Tecnología utilizada:</strong>
+      La aplicación fue desarrollada completamente en <strong>HTML5 + CSS3 + JavaScript Vanilla</strong>
+      (sin frameworks externos). Se ejecuta directamente en el navegador abriendo el archivo
+      <code>index.html</code>. No requiere instalación ni conexión a internet.
+    </div>
+
+    <h2>4.1 Guía de Uso — Paso a Paso</h2>
+
+    <ol class="steps">
+      <li>
+        <div>
+          <strong>Abrir la aplicación.</strong>
+          Hacer doble clic en el archivo <code>index.html</code> para abrirlo en el navegador web
+          (Google Chrome, Firefox o Edge recomendados).
+        </div>
+      </li>
+      <li>
+        <div>
+          <strong>Configurar el tamaño del problema.</strong>
+          En el panel "Configuración de la Tabla", introducir el número de
+          <em>Almacenes (Orígenes)</em> y <em>Sucursales (Destinos)</em> deseados (entre 2 y 8).
+          Presionar el botón <strong>🗂️ Generar Tabla</strong>.
+        </div>
+      </li>
+      <li>
+        <div>
+          <strong>Ingresar los datos del problema.</strong>
+          La tabla aparecerá con datos de ejemplo precargados. Modificarlos según el problema
+          a resolver: costos unitarios <code>c<sub>ij</sub></code>, oferta <code>s<sub>i</sub></code>
+          (columna morada) y demanda <code>d<sub>j</sub></code> (fila amarilla).
+        </div>
+      </li>
+      <li>
+        <div>
+          <strong>Calcular la solución.</strong>
+          En el panel de resultados, presionar <strong>▶️ Calcular Ruta Óptima</strong>.
+          La aplicación verificará automáticamente el equilibrio del problema y ejecutará
+          el algoritmo de la Esquina Noroeste.
+        </div>
+      </li>
+      <li>
+        <div>
+          <strong>Interpretar los resultados.</strong>
+          Las celdas asignadas se resaltan con un badge mostrando las unidades asignadas.
+          El panel de resultados muestra el <em>Costo Total</em> y el <em>Registro de Asignaciones</em>
+          con cada paso del algoritmo, incluyendo el cálculo de costo por asignación.
+        </div>
+      </li>
+      <li>
+        <div>
+          <strong>Limpiar y reiniciar.</strong>
+          Presionar <strong>🔄 Limpiar Resultados</strong> para borrar los resultados sin
+          modificar los datos de entrada, o volver al paso 1 para un nuevo problema.
+        </div>
+      </li>
+    </ol>
+
+    <h2>4.2 Lenguaje de Programación — JavaScript</h2>
+    <p>
+      JavaScript es un lenguaje de programación <strong>interpretado, orientado a objetos y de alto nivel</strong>,
+      nativo de los navegadores web. En esta aplicación se utilizó JavaScript puro
+      (<em>Vanilla JS</em>) para implementar toda la lógica del algoritmo sin dependencias externas.
+    </p>
+
+    <div class="two-col">
+      <div class="mini-card">
+        <div class="mc-title">🧠 Funciones principales</div>
+        <ul style="font-size:9pt; padding-left:1rem; line-height:1.8;">
+          <li><code>generarTabla()</code> — Crea la tabla HTML dinámicamente</li>
+          <li><code>leerMatriz()</code> — Extrae datos del DOM</li>
+          <li><code>verificarEquilibrio()</code> — Valida oferta = demanda</li>
+          <li><code>metodologiaEsquinaNoroeste()</code> — Algoritmo principal</li>
+          <li><code>actualizarResultadosUI()</code> — Renderiza resultados</li>
+        </ul>
+      </div>
+      <div class="mini-card">
+        <div class="mc-title">🎨 Tecnologías de soporte</div>
+        <ul style="font-size:9pt; padding-left:1rem; line-height:1.8;">
+          <li><strong>HTML5</strong> — Estructura semántica del documento</li>
+          <li><strong>CSS3</strong> — Variables, Flexbox, Grid, animaciones</li>
+          <li><strong>Google Fonts</strong> — Tipografía Inter + JetBrains Mono</li>
+          <li><strong>SVG inline</strong> — Favicon sin archivos extra</li>
+          <li><strong>DOM API</strong> — Manipulación dinámica de la interfaz</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="page-footer">
+      <span>Sección IF03 · Investigación de Operaciones I</span>
+      <span>Pág. 5</span>
+    </div>
+  </div>
+
+  <div class="page-footer">
+    <span>Sección IF03 · Investigación de Operaciones I · Ing. Leober Urbano</span>
+    <span>Pág. 6</span>
+  </div>
+  </div>
+
+</body>
+
+</html>

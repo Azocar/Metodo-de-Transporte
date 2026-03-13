@@ -1,0 +1,1652 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description"
+    content="Aplicación web para resolver el Problema de Transporte utilizando el Método de la Esquina Noroeste. Asignatura: Investigación de Operaciones." />
+  <title>Método de Transporte – Esquina Noroeste | Investigación de Operaciones</title>
+
+  <!-- Favicon inline (SVG data URI ) -->
+  <link rel="icon" type="image/svg+xml"
+    href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%230d1422'/%3E%3Ctext x='16' y='23' font-family='Inter,system-ui,sans-serif' font-size='20' font-weight='800' fill='%2363b3ed' text-anchor='middle'%3EM%3C/text%3E%3C/svg%3E" />
+
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap"
+    rel="stylesheet" />
+
+  <style>
+    /* ============================================================
+       Sistema de colores y variables globales
+       ============================================================ */
+    :root {
+      --bg-base: #080c14;
+      --bg-surface: #0d1422;
+      --bg-card: #111827;
+      --bg-card-hover: #161f30;
+      --bg-input: #0d1422;
+
+      --border-subtle: rgba(255, 255, 255, 0.12);
+      --border-bright: rgba(255, 255, 255, 0.22);
+      --border-accent: rgba(99, 179, 237, 0.5);
+
+      --accent-primary: #63b3ed;
+      --accent-glow: rgba(99, 179, 237, 0.18);
+      --accent-success: #68d391;
+      --accent-warning: #f6ad55;
+      --accent-danger: #fc8181;
+      --accent-purple: #b794f4;
+
+      --text-primary: #f0f6ff;
+      --text-secondary: #94a3b8;
+      --text-muted: #475569;
+
+      --radius-sm: 6px;
+      --radius-md: 10px;
+      --radius-lg: 16px;
+      --radius-xl: 22px;
+
+      --shadow-card: 0 4px 32px rgba(0, 0, 0, 0.55);
+      --shadow-glow: 0 0 28px rgba(99, 179, 237, 0.18);
+
+      --transition: 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    /* ============================================================
+       RESET & BASE
+       ============================================================ */
+    *,
+    *::before,
+    *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    html {
+      scroll-behavior: smooth;
+    }
+
+    body {
+      font-family: 'Inter', system-ui, sans-serif;
+      background-color: var(--bg-base);
+      color: var(--text-primary);
+      min-height: 100vh;
+      line-height: 1.6;
+      overflow-x: hidden;
+    }
+
+    /* ============================================================
+       ANIMATED BACKGROUND
+       ============================================================ */
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background:
+        radial-gradient(ellipse 80% 60% at 20% 10%, rgba(99, 179, 237, 0.06) 0%, transparent 60%),
+        radial-gradient(ellipse 60% 50% at 80% 80%, rgba(183, 148, 244, 0.05) 0%, transparent 60%);
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    .app-wrapper {
+      position: relative;
+      z-index: 1;
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 2rem 1.5rem 4rem;
+    }
+
+    /* ============================================================
+       HEADER
+       ============================================================ */
+    .app-header {
+      text-align: center;
+      padding: 3rem 1rem 2.5rem;
+      margin-bottom: 2.5rem;
+    }
+
+    .header-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      background: rgba(99, 179, 237, 0.1);
+      border: 1px solid var(--border-accent);
+      border-radius: 50px;
+      padding: 0.35rem 1rem;
+      font-size: 0.78rem;
+      font-weight: 600;
+      letter-spacing: 0.08em;
+      color: var(--accent-primary);
+      text-transform: uppercase;
+      margin-bottom: 1.4rem;
+    }
+
+    .header-badge .dot {
+      width: 7px;
+      height: 7px;
+      background: var(--accent-success);
+      border-radius: 50%;
+      animation: pulse-dot 2s ease-in-out infinite;
+    }
+
+    @keyframes pulse-dot {
+
+      0%,
+      100% {
+        opacity: 1;
+        transform: scale(1);
+      }
+
+      50% {
+        opacity: 0.5;
+        transform: scale(0.7);
+      }
+    }
+
+    .app-header h1 {
+      font-size: clamp(1.7rem, 4vw, 2.8rem);
+      font-weight: 800;
+      letter-spacing: -0.02em;
+      line-height: 1.15;
+      background: linear-gradient(135deg, #f0f6ff 30%, var(--accent-primary) 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      margin-bottom: 1rem;
+    }
+
+    .app-header p {
+      max-width: 680px;
+      margin: 0 auto;
+      color: var(--text-secondary);
+      font-size: 1rem;
+      font-weight: 400;
+    }
+
+    .header-divider {
+      width: 60px;
+      height: 3px;
+      background: linear-gradient(90deg, var(--accent-primary), var(--accent-purple));
+      border-radius: 99px;
+      margin: 1.6rem auto 0;
+    }
+
+    /* ============================================================
+       TARJETAS
+       ============================================================ */
+    .card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-xl);
+      padding: 2rem;
+      box-shadow: var(--shadow-card);
+      transition: border-color var(--transition);
+    }
+
+    .card:hover {
+      border-color: var(--border-bright);
+    }
+
+    .card-title {
+      display: flex;
+      align-items: center;
+      gap: 0.65rem;
+      font-size: 0.95rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.07em;
+      color: var(--accent-primary);
+      margin-bottom: 1.5rem;
+    }
+
+    .card-title .icon {
+      font-size: 1.1rem;
+    }
+
+    /* ============================================================
+       PANEL DE CONFIGURACIÓN
+       ============================================================ */
+    .config-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr auto;
+      gap: 1rem;
+      align-items: end;
+    }
+
+    @media (max-width: 600px) {
+      .config-grid {
+        grid-template-columns: 1fr 1fr;
+      }
+
+      .config-grid .btn-generate {
+        grid-column: 1 / -1;
+      }
+    }
+
+    .form-group {
+      display: flex;
+      flex-direction: column;
+      gap: 0.45rem;
+    }
+
+    .form-group label {
+      font-size: 0.82rem;
+      font-weight: 600;
+      color: var(--text-secondary);
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+    }
+
+    .form-group input[type="number"] {
+      background: var(--bg-input);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-md);
+      color: var(--text-primary);
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 1.1rem;
+      font-weight: 600;
+      padding: 0.7rem 1rem;
+      outline: none;
+      transition: border-color var(--transition), box-shadow var(--transition);
+      width: 100%;
+    }
+
+    .form-group input[type="number"]:focus {
+      border-color: var(--accent-primary);
+      box-shadow: 0 0 0 3px var(--accent-glow);
+    }
+
+    /* ocultar flechas nativas del input number */
+    input[type="number"]::-webkit-inner-spin-button,
+    input[type="number"]::-webkit-outer-spin-button {
+      -webkit-appearance: none;
+    }
+
+    /* ============================================================
+       BOTONES
+       ============================================================ */
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.55rem;
+      border: none;
+      border-radius: var(--radius-md);
+      cursor: pointer;
+      font-family: 'Inter', sans-serif;
+      font-weight: 700;
+      font-size: 0.9rem;
+      letter-spacing: 0.03em;
+      padding: 0.75rem 1.6rem;
+      transition: all var(--transition);
+      position: relative;
+      overflow: hidden;
+      white-space: nowrap;
+    }
+
+    .btn::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: rgba(255, 255, 255, 0);
+      transition: background var(--transition);
+    }
+
+    .btn:hover::after {
+      background: rgba(255, 255, 255, 0.07);
+    }
+
+    .btn:active {
+      transform: scale(0.97);
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg, #4299e1, #667eea);
+      color: #fff;
+      box-shadow: 0 4px 18px rgba(66, 153, 225, 0.35);
+    }
+
+    .btn-primary:hover {
+      box-shadow: 0 6px 24px rgba(66, 153, 225, 0.5);
+    }
+
+    .btn-success {
+      background: linear-gradient(135deg, #38a169, #48bb78);
+      color: #fff;
+      box-shadow: 0 4px 18px rgba(56, 161, 105, 0.35);
+    }
+
+    .btn-success:hover {
+      box-shadow: 0 6px 24px rgba(56, 161, 105, 0.5);
+    }
+
+    .btn-lg {
+      padding: 0.9rem 2.2rem;
+      font-size: 1rem;
+      border-radius: var(--radius-lg);
+    }
+
+    /* ============================================================
+       SECCIÓN DE LA TABLA – wrapper con scroll horizontal
+       ============================================================ */
+    #tabla-section {
+      display: none;
+      margin-top: 1.5rem;
+    }
+
+    .table-scroll-wrapper {
+      overflow-x: auto;
+      padding-bottom: 0.5rem;
+    }
+
+    /* ============================================================
+       TABLA INTERACTIVA – Matriz de transporte
+       ============================================================ */
+    .transport-table {
+      border-collapse: separate;
+      border-spacing: 0;
+      width: 100%;
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-lg);
+      overflow: hidden;
+      min-width: 400px;
+    }
+
+    /* Celdas de encabezado */
+    .transport-table th {
+      background: rgba(99, 179, 237, 0.08);
+      border: 1px solid var(--border-subtle);
+      color: var(--accent-primary);
+      font-size: 0.8rem;
+      font-weight: 700;
+      letter-spacing: 0.06em;
+      padding: 0.7rem 0.5rem;
+      text-align: center;
+      text-transform: uppercase;
+    }
+
+    /* Celdas de datos */
+    .transport-table td {
+      border: 1px solid var(--border-subtle);
+      padding: 0.4rem;
+      text-align: center;
+      vertical-align: middle;
+      background: var(--bg-surface);
+      transition: background var(--transition);
+    }
+
+    .transport-table tr:hover td {
+      background: var(--bg-card-hover);
+    }
+
+    /* Celda de etiqueta de fila (Almacén X) */
+    .transport-table td.row-label {
+      background: rgba(99, 179, 237, 0.06);
+      color: var(--accent-primary);
+      font-size: 0.82rem;
+      font-weight: 600;
+      white-space: nowrap;
+      padding: 0.4rem 0.8rem;
+    }
+
+    /* Celda de costo (contiene el input del costo + badge de asignación) */
+    .cost-cell {
+      position: relative;
+      min-width: 90px;
+      height: 70px;
+    }
+
+    /* Input del costo en el centro-superior de la celda */
+    .cost-input {
+      background: transparent;
+      border: none;
+      border-bottom: 1px solid var(--border-subtle);
+      border-radius: 0;
+      color: var(--text-primary);
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.95rem;
+      font-weight: 600;
+      padding: 0.2rem 0.3rem;
+      text-align: center;
+      outline: none;
+      width: 100%;
+      transition: border-color var(--transition);
+    }
+
+    .cost-input:focus {
+      border-bottom-color: var(--accent-primary);
+    }
+
+    /* Badge de unidades asignadas (aparece en la parte inferior de la celda) */
+    .assign-badge {
+      position: absolute;
+      bottom: 6px;
+      right: 6px;
+      background: rgba(104, 211, 145, 0.2);
+      border: 1px solid rgba(104, 211, 145, 0.4);
+      border-radius: 4px;
+      color: var(--accent-success);
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.72rem;
+      font-weight: 600;
+      padding: 1px 5px;
+      opacity: 0;
+      transform: scale(0.85);
+      transition: opacity 0.3s, transform 0.3s;
+    }
+
+    .assign-badge.visible {
+      opacity: 1;
+      transform: scale(1);
+    }
+
+    /* Celda resaltada (la esquina noroeste activa durante la animación) */
+    .cost-cell.highlighted {
+      background: rgba(99, 179, 237, 0.15) !important;
+    }
+
+    /* Input de oferta (última columna) */
+    .supply-input {
+      background: rgba(183, 148, 244, 0.08);
+      border: 1px solid rgba(183, 148, 244, 0.25);
+      border-radius: var(--radius-sm);
+      color: var(--accent-purple);
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.95rem;
+      font-weight: 700;
+      padding: 0.4rem 0.5rem;
+      text-align: center;
+      outline: none;
+      width: 80px;
+      transition: border-color var(--transition), box-shadow var(--transition);
+    }
+
+    .supply-input:focus {
+      border-color: var(--accent-purple);
+      box-shadow: 0 0 0 3px rgba(183, 148, 244, 0.15);
+    }
+
+    /* Input de demanda (última fila) */
+    .demand-input {
+      background: rgba(246, 173, 85, 0.08);
+      border: 1px solid rgba(246, 173, 85, 0.25);
+      border-radius: var(--radius-sm);
+      color: var(--accent-warning);
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.95rem;
+      font-weight: 700;
+      padding: 0.4rem 0.5rem;
+      text-align: center;
+      outline: none;
+      width: 80px;
+      transition: border-color var(--transition), box-shadow var(--transition);
+    }
+
+    .demand-input:focus {
+      border-color: var(--accent-warning);
+      box-shadow: 0 0 0 3px rgba(246, 173, 85, 0.15);
+    }
+
+    /* Celda de totales (esquina inferior-derecha) */
+    .total-cell {
+      background: rgba(99, 179, 237, 0.05);
+      color: var(--text-secondary);
+      font-size: 0.78rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    /* ============================================================
+       PANEL DE RESULTADOS
+       ============================================================ */
+    #resultado-section {
+      display: none;
+      margin-top: 1.5rem;
+    }
+
+    .result-actions {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      flex-wrap: wrap;
+      margin-bottom: 1.5rem;
+    }
+
+    /* Costo total destacado */
+    .cost-display {
+      background: linear-gradient(135deg, rgba(104, 211, 145, 0.1), rgba(99, 179, 237, 0.1));
+      border: 1px solid rgba(104, 211, 145, 0.3);
+      border-radius: var(--radius-lg);
+      padding: 1.5rem 2rem;
+      text-align: center;
+      margin-bottom: 1.5rem;
+    }
+
+    .cost-display .label {
+      font-size: 0.82rem;
+      font-weight: 600;
+      color: var(--text-secondary);
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      margin-bottom: 0.3rem;
+    }
+
+    .cost-display .value {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: clamp(2rem, 5vw, 3.2rem);
+      font-weight: 800;
+      background: linear-gradient(135deg, #68d391, #63b3ed);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .cost-display .subtitle {
+      font-size: 0.78rem;
+      color: var(--text-muted);
+      margin-top: 0.2rem;
+    }
+
+    /* Log de pasos */
+    .steps-log {
+      background: var(--bg-surface);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-lg);
+      padding: 1rem;
+      max-height: 380px;
+      overflow-y: auto;
+    }
+
+    .steps-log::-webkit-scrollbar {
+      width: 6px;
+    }
+
+    .steps-log::-webkit-scrollbar-track {
+      background: transparent;
+    }
+
+    .steps-log::-webkit-scrollbar-thumb {
+      background: var(--border-subtle);
+      border-radius: 99px;
+    }
+
+    .log-title {
+      font-size: 0.8rem;
+      font-weight: 700;
+      color: var(--text-secondary);
+      text-transform: uppercase;
+      letter-spacing: 0.07em;
+      margin-bottom: 0.8rem;
+      padding-bottom: 0.6rem;
+      border-bottom: 1px solid var(--border-subtle);
+    }
+
+    /* Cada entrada del log */
+    .log-entry {
+      display: flex;
+      align-items: flex-start;
+      gap: 0.8rem;
+      padding: 0.6rem 0.5rem;
+      border-radius: var(--radius-sm);
+      animation: slideIn 0.35s ease forwards;
+      font-size: 0.88rem;
+      color: var(--text-secondary);
+    }
+
+    .log-entry:hover {
+      background: var(--bg-card-hover);
+    }
+
+    @keyframes slideIn {
+      from {
+        opacity: 0;
+        transform: translateY(8px);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .log-entry .log-step {
+      flex-shrink: 0;
+      background: rgba(99, 179, 237, 0.12);
+      border: 1px solid var(--border-accent);
+      border-radius: 4px;
+      color: var(--accent-primary);
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.72rem;
+      font-weight: 700;
+      padding: 2px 6px;
+      min-width: 2rem;
+      text-align: center;
+    }
+
+    .log-entry .log-text {
+      flex: 1;
+      line-height: 1.45;
+    }
+
+    .log-entry .log-units {
+      flex-shrink: 0;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.8rem;
+      font-weight: 600;
+      color: var(--accent-success);
+    }
+
+    /* ============================================================
+       ALERTA PERSONALIZADA – si oferta ≠ demanda
+       ============================================================ */
+    .custom-alert {
+      display: none;
+      background: rgba(252, 129, 129, 0.1);
+      border: 1px solid rgba(252, 129, 129, 0.4);
+      border-radius: var(--radius-lg);
+      padding: 1rem 1.4rem;
+      margin-top: 1rem;
+      animation: slideIn 0.35s ease forwards;
+    }
+
+    .custom-alert.show {
+      display: flex;
+      align-items: flex-start;
+      gap: 0.8rem;
+    }
+
+    .custom-alert .alert-icon {
+      font-size: 1.3rem;
+    }
+
+    .custom-alert .alert-body .alert-title {
+      font-size: 0.9rem;
+      font-weight: 700;
+      color: var(--accent-danger);
+      margin-bottom: 0.2rem;
+    }
+
+    .custom-alert .alert-body .alert-msg {
+      font-size: 0.84rem;
+      color: var(--text-secondary);
+    }
+
+    /* ============================================================
+       BARRA DE EQUIPO – 2 filas compactas, todo a la izquierda
+       ============================================================ */
+    .team-bar {
+      display: flex;
+      flex-direction: column;
+      gap: 0.4rem;
+      padding: 0.65rem 1.2rem;
+      margin-bottom: 1.5rem;
+      border-radius: var(--radius-lg);
+      background: var(--bg-surface);
+      border: 1px solid var(--border-subtle);
+      transition: border-color var(--transition);
+    }
+
+    .team-bar:hover {
+      border-color: var(--border-bright);
+    }
+
+    /* Fila genérica */
+    .tbar-row {
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+      flex-wrap: wrap;
+    }
+
+    /* Etiqueta de sección (Integrantes, Docente…) */
+    .tbar-tag {
+      font-size: 0.62rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: var(--text-muted);
+      white-space: nowrap;
+      margin-right: 0.15rem;
+    }
+
+    /* Chip de cada integrante */
+    .tbar-chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.28rem;
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid var(--border-subtle);
+      border-radius: 4px;
+      padding: 0.12rem 0.48rem;
+      transition: background var(--transition), border-color var(--transition);
+      cursor: default;
+      white-space: nowrap;
+    }
+
+    .tbar-chip:hover {
+      background: rgba(99, 179, 237, 0.08);
+      border-color: rgba(99, 179, 237, 0.3);
+    }
+
+    .tbar-chip .chip-name {
+      font-size: 0.76rem;
+      font-weight: 600;
+      color: var(--text-primary);
+    }
+
+    .tbar-chip .chip-dot {
+      width: 3px;
+      height: 3px;
+      border-radius: 50%;
+      background: var(--border-bright);
+      flex-shrink: 0;
+    }
+
+    .tbar-chip .chip-ci {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.65rem;
+      color: var(--text-muted);
+    }
+
+    /* Separador vertical fino */
+    .tbar-vsep {
+      display: inline-block;
+      width: 1px;
+      height: 14px;
+      background: var(--border-subtle);
+      flex-shrink: 0;
+      margin: 0 0.25rem;
+    }
+
+    /* Dato meta (docente / sección) en la segunda fila */
+    .tbar-meta-inline {
+      display: inline-flex;
+      align-items: baseline;
+      gap: 0.3rem;
+    }
+
+    .tbar-meta-inline .tmi-label {
+      font-size: 0.62rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.09em;
+    }
+
+    .tbar-meta-inline .tmi-val {
+      font-size: 0.8rem;
+      font-weight: 700;
+      color: var(--text-primary);
+    }
+
+    .tbar-meta-inline.is-purple .tmi-label {
+      color: var(--accent-purple);
+    }
+
+    .tbar-meta-inline.is-blue .tmi-label {
+      color: var(--accent-primary);
+    }
+
+    .tbar-meta-inline.is-blue .tmi-val {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.82rem;
+      letter-spacing: 0.05em;
+    }
+
+    /* ============================================================
+       FOOTER
+       ============================================================ */
+    .app-footer {
+      text-align: center;
+      margin-top: 3rem;
+      padding-top: 1.5rem;
+      border-top: 1px solid var(--border-subtle);
+      color: var(--text-muted);
+      font-size: 0.8rem;
+    }
+
+    /* ============================================================
+       UTILIDADES
+       ============================================================ */
+    .mb-6 {
+      margin-bottom: 1.5rem;
+    }
+
+    .mt-4 {
+      margin-top: 1rem;
+    }
+
+    .gap-4 {
+      gap: 1rem;
+    }
+
+    /* Leyenda de colores */
+    .legend {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 1rem;
+      margin-top: 1rem;
+      font-size: 0.78rem;
+      color: var(--text-secondary);
+    }
+
+    .legend-item {
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+    }
+
+    .legend-dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      flex-shrink: 0;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="app-wrapper">
+
+    <!-- ============================================================
+         ENCABEZADO DE LA APLICACIÓN
+         ============================================================ -->
+    <header class="app-header">
+      <div class="header-badge">
+        <span class="dot"></span>
+        Investigación de Operaciones
+      </div>
+      <h1>Método de Transporte<br>Esquina Noroeste</h1>
+      <p>
+        Resuelve <strong>el problema de transporte</strong> encontrando una solución básica factible inicial,
+        comienza desde la celda superior-izquierda
+        (noroeste) y va asignando unidades mientras satisface la oferta de cada origen y la
+        demanda de cada destino, moviéndose hacia la derecha o hacia abajo según cuál se agote primero.
+      </p>
+      <div class="header-divider"></div>
+    </header>
+
+    <!-- ============================================================
+         BARRA COMPACTA 2 FILAS – Integrantes · Docente · Sección
+         ============================================================ -->
+    <div class="team-bar" role="region" aria-label="Información del equipo">
+
+      <!-- FILA 1: Chips de integrantes -->
+      <div class="tbar-row">
+        <span class="tbar-tag">👥 Integrantes</span>
+
+        <div class="tbar-chip" title="C.I: 12.664.288">
+          <span class="chip-name">Nancy Rodríguez</span>
+          <span class="chip-dot"></span>
+          <span class="chip-ci">12.664.288</span>
+        </div>
+        <div class="tbar-chip" title="C.I: 19.630.763">
+          <span class="chip-name">Rodilis Zapata</span>
+          <span class="chip-dot"></span>
+          <span class="chip-ci">19.630.763</span>
+        </div>
+        <div class="tbar-chip" title="C.I: 19.789.539">
+          <span class="chip-name">Gabriel Azócar</span>
+          <span class="chip-dot"></span>
+          <span class="chip-ci">19.789.539</span>
+        </div>
+        <div class="tbar-chip" title="C.I: 30.545.105">
+          <span class="chip-name">Ramon Morao</span>
+          <span class="chip-dot"></span>
+          <span class="chip-ci">30.545.105</span>
+        </div>
+        <div class="tbar-chip" title="C.I: 28.714.596">
+          <span class="chip-name">Betzaida Fernandez</span>
+          <span class="chip-dot"></span>
+          <span class="chip-ci">28.714.596</span>
+        </div>
+      </div>
+
+      <!-- Divisor horizontal entre las dos filas -->
+      <div style="height:1px;background:var(--border-subtle);margin:0 -0.2rem;"></div>
+
+      <!-- FILA 2: Docente + Sección, alineados a la izquierda -->
+      <div class="tbar-row">
+        <span class="tbar-meta-inline is-purple">
+          <span class="tmi-label">✦ Docente:</span>
+          <span class="tmi-val">Ing. Leober Urbano</span>
+        </span>
+
+        <span class="tbar-vsep"></span>
+
+        <span class="tbar-meta-inline is-blue">
+          <span class="tmi-label">▪ Sección:</span>
+          <span class="tmi-val">IF03</span>
+        </span>
+      </div>
+
+    </div>
+
+    <!-- ============================================================
+         PANEL 1 – CONFIGURACIÓN DE LA TABLA
+         ============================================================ -->
+    <section class="card mb-6" id="panel-config" aria-labelledby="config-title">
+      <h2 class="card-title" id="config-title">
+        <span class="icon">⚙️</span> Configuración del Problema
+      </h2>
+
+      <div class="config-grid">
+        <!-- Número de orígenes -->
+        <div class="form-group">
+          <label for="num-origenes">Almacenes (Orígenes)</label>
+          <input type="number" id="num-origenes" min="2" max="8" value="3" placeholder="Ej: 3"
+            aria-label="Número de almacenes origen" />
+        </div>
+
+        <!-- Número de destinos -->
+        <div class="form-group">
+          <label for="num-destinos">Sucursales (Destinos)</label>
+          <input type="number" id="num-destinos" min="2" max="8" value="4" placeholder="Ej: 4"
+            aria-label="Número de sucursales destino" />
+        </div>
+
+        <!-- Botón generar tabla -->
+        <button class="btn btn-primary btn-generate" id="btn-generar" onclick="generarTabla()"
+          aria-label="Generar la matriz de transporte">
+          <span>🗂️</span> Generar Tabla
+        </button>
+      </div>
+    </section>
+
+    <!-- ============================================================
+         PANEL 2 – MATRIZ INTERACTIVA DE TRANSPORTE
+         ============================================================ -->
+    <section class="card mb-6" id="tabla-section" aria-labelledby="tabla-title">
+      <h2 class="card-title" id="tabla-title">
+        <span class="icon">📊</span> Matriz de Costos y Capacidades
+      </h2>
+
+      <div class="table-scroll-wrapper">
+        <table class="transport-table" id="transport-table" aria-label="Tabla de costos de transporte">
+          <!-- El contenido se genera dinámicamente con JavaScript -->
+        </table>
+      </div>
+
+      <!-- Leyenda de colores de la tabla -->
+      <div class="legend" aria-label="Leyenda de colores">
+        <div class="legend-item">
+          <div class="legend-dot" style="background:var(--accent-primary)"></div>
+          <span>Costo de envío (editable en cada celda)</span>
+        </div>
+        <div class="legend-item">
+          <div class="legend-dot" style="background:var(--accent-purple)"></div>
+          <span>Oferta (unidades disponibles por almacén)</span>
+        </div>
+        <div class="legend-item">
+          <div class="legend-dot" style="background:var(--accent-warning)"></div>
+          <span>Demanda (unidades requeridas por sucursal)</span>
+        </div>
+        <div class="legend-item">
+          <div class="legend-dot" style="background:var(--accent-success)"></div>
+          <span>Unidades asignadas (resultado del algoritmo)</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============================================================
+         PANEL 3 – RESULTADOS Y LOG DEL ALGORITMO
+         ============================================================ -->
+    <section class="card" id="resultado-section" aria-labelledby="resultado-title">
+      <h2 class="card-title" id="resultado-title">
+        <span class="icon">🚀</span> Solución – Método de la Esquina Noroeste
+      </h2>
+
+      <!-- Acciones del panel de resultados -->
+      <div class="result-actions">
+        <button class="btn btn-success btn-lg" id="btn-calcular" onclick="calcularEsquinaNoroeste()"
+          aria-label="Ejecutar el algoritmo de la Esquina Noroeste">
+          <span>▶️</span> Calcular Ruta Óptima
+        </button>
+        <button class="btn btn-primary" onclick="resetResultados()" aria-label="Limpiar los resultados anteriores"
+          style="background: rgba(99,179,237,0.15); box-shadow: none; color: var(--accent-primary); border: 1px solid var(--border-accent);">
+          🔄 Limpiar Resultados
+        </button>
+      </div>
+
+      <!-- Alerta de problema no equilibrado -->
+      <div class="custom-alert" id="alerta-desequilibrio" role="alert" aria-live="assertive">
+        <span class="alert-icon">⚠️</span>
+        <div class="alert-body">
+          <div class="alert-title">Problema No Equilibrado</div>
+          <div class="alert-msg" id="alerta-msg">
+            La oferta total no es igual a la demanda total. Ajuste los valores antes de calcular.
+          </div>
+        </div>
+      </div>
+
+      <!-- Display del costo total (se muestra tras calcular) -->
+      <div class="cost-display" id="cost-display" style="display:none;" aria-live="polite">
+        <div class="label">💰 Costo Total de Transporte</div>
+        <div class="value" id="costo-total-valor">$0</div>
+        <div class="subtitle">Suma de (costo unitario × unidades asignadas) en cada ruta activa</div>
+      </div>
+
+      <!-- Log paso a paso del algoritmo -->
+      <div class="steps-log" id="steps-log" aria-live="polite" aria-label="Registro de asignaciones del algoritmo">
+        <div class="log-title">📋 Registro de Asignaciones – Paso a Paso</div>
+        <div id="log-entries">
+          <!-- Aquí se insertan los pasos del algoritmo dinámicamente -->
+          <p style="color:var(--text-muted); font-size:0.85rem; padding:0.5rem;">
+            Presiona <strong style="color:var(--text-secondary)">Calcular Ruta Óptima</strong> para ver el registro de
+            pasos del algoritmo.
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============================================================
+         PIE DE PÁGINA
+         ============================================================ -->
+    <footer class="app-footer">
+      <p>Método de Transporte – Esquina Noroeste &bull; Investigación de Operaciones &bull; 2026</p>
+    </footer>
+  </div><!-- /.app-wrapper -->
+
+
+  <!-- ============================================================
+       JAVASCRIPT – Lógica de la aplicación
+       ============================================================ -->
+  <script>
+    /* ============================================================
+       CONSTANTES Y ESTADO GLOBAL
+       ============================================================ */
+
+    // Datos de ejemplo precargados para facilitar la demostración
+    const DATOS_EJEMPLO = {
+      costos: [
+        [2, 3, 1, 5],
+        [7, 4, 6, 2],
+        [4, 3, 8, 1]
+      ],
+      oferta: [120, 80, 80],
+      demanda: [150, 70, 60, 0]   // último elemento es comodín (se ignora en la tabla raíz de demanda)
+    };
+
+
+    /* ============================================================
+       FUNCIÓN: generarTabla()
+       ============================
+       Propósito: Lee los valores de configuración (orígenes y
+       destinos) y construye dinámicamente la tabla HTML de la
+       matriz de transporte con inputs editables.
+
+       Flujo:
+         1. Valida que los números estén en rangos permitidos (2-8).
+         2. Construye el thead con los encabezados de Destinos.
+         3. Construye el tbody con una fila por cada Origen:
+            - Cada celda interior tiene un <input> para el costo.
+            - La última celda de cada fila tiene un <input> para la Oferta.
+         4. Añade la fila de Demanda al final (última fila del tbody).
+         5. Precarga valores de ejemplo si disponibles.
+         6. Muestra las secciones de tabla y resultados.
+       ============================================================ */
+    function generarTabla() {
+      const numOrigenes = parseInt(document.getElementById('num-origenes').value, 10);
+      const numDestinos = parseInt(document.getElementById('num-destinos').value, 10);
+
+      // ── Validación básica de rango ──────────────────────────────
+      if (isNaN(numOrigenes) || isNaN(numDestinos) ||
+        numOrigenes < 2 || numDestinos < 2 ||
+        numOrigenes > 8 || numDestinos > 8) {
+        alert('Por favor ingrese entre 2 y 8 orígenes y destinos.');
+        return;
+      }
+
+      const tabla = document.getElementById('transport-table');
+      tabla.innerHTML = ''; // Limpiar contenido previo
+
+      // ── THEAD: fila de encabezados ──────────────────────────────
+      const thead = document.createElement('thead');
+      let headerRow = '<tr><th scope="col">Origen / Destino</th>';
+      for (let j = 0; j < numDestinos; j++) {
+        headerRow += `<th scope="col">Sucursal ${j + 1}</th>`;
+      }
+      headerRow += '<th scope="col" style="color:var(--accent-purple)">Oferta</th></tr>';
+      thead.innerHTML = headerRow;
+      tabla.appendChild(thead);
+
+      // ── TBODY ───────────────────────────────────────────────────
+      const tbody = document.createElement('tbody');
+
+      // Filas de orígenes (almacenes)
+      for (let i = 0; i < numOrigenes; i++) {
+        const tr = document.createElement('tr');
+
+        // Etiqueta de fila (ej: "Almacén 1")
+        tr.innerHTML = `<td class="row-label" scope="row">🏭 Almacén ${i + 1}</td>`;
+
+        // Celdas de costo para cada destino
+        for (let j = 0; j < numDestinos; j++) {
+          const costoEjemplo = (DATOS_EJEMPLO.costos[i] && DATOS_EJEMPLO.costos[i][j] !== undefined)
+            ? DATOS_EJEMPLO.costos[i][j] : '';
+
+          tr.innerHTML += `
+            <td class="cost-cell" id="cell-${i}-${j}">
+              <input
+                type="number"
+                class="cost-input"
+                id="costo-${i}-${j}"
+                value="${costoEjemplo}"
+                min="0"
+                placeholder="c${i + 1}${j + 1}"
+                aria-label="Costo de Almacén ${i + 1} a Sucursal ${j + 1}"
+              />
+              <span class="assign-badge" id="badge-${i}-${j}"></span>
+            </td>`;
+        }
+
+        // Celda de oferta del almacén i
+        const ofertaEjemplo = DATOS_EJEMPLO.oferta[i] !== undefined ? DATOS_EJEMPLO.oferta[i] : '';
+        tr.innerHTML += `
+          <td>
+            <input
+              type="number"
+              class="supply-input"
+              id="oferta-${i}"
+              value="${ofertaEjemplo}"
+              min="0"
+              placeholder="O${i + 1}"
+              aria-label="Oferta del Almacén ${i + 1}"
+            />
+          </td>`;
+
+        tbody.appendChild(tr);
+      }
+
+      // ── Fila de demandas (última fila) ─────────────────────────
+      const demandaRow = document.createElement('tr');
+      demandaRow.innerHTML = `<td class="row-label" style="color:var(--accent-warning)">📦 Demanda</td>`;
+
+      for (let j = 0; j < numDestinos; j++) {
+        const demandaEjemplo = (DATOS_EJEMPLO.demanda[j] !== undefined) ? DATOS_EJEMPLO.demanda[j] : '';
+        demandaRow.innerHTML += `
+          <td>
+            <input
+              type="number"
+              class="demand-input"
+              id="demanda-${j}"
+              value="${demandaEjemplo}"
+              min="0"
+              placeholder="D${j + 1}"
+              aria-label="Demanda de la Sucursal ${j + 1}"
+            />
+          </td>`;
+      }
+
+      // Celda total (esquina inferior derecha – referencia visual)
+      demandaRow.innerHTML += `<td class="total-cell">∑</td>`;
+      tbody.appendChild(demandaRow);
+
+      tabla.appendChild(tbody);
+
+      // ── Mostrar las secciones ocultas ──────────────────────────
+      document.getElementById('tabla-section').style.display = 'block';
+      document.getElementById('resultado-section').style.display = 'block';
+
+      // Limpiar alertas y resultados anteriores
+      resetResultados();
+
+      // Hacer scroll suave hacia la tabla
+      setTimeout(() => {
+        document.getElementById('tabla-section').scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }, 100);
+    }
+
+
+    /* ============================================================
+       FUNCIÓN: leerMatriz()
+       ============================
+       Propósito: Extrae todos los valores ingresados en la tabla
+       HTML y los organiza en estructuras de datos JavaScript para
+       que el algoritmo los pueda procesar.
+
+       Retorna un objeto con:
+         - costos [m×n]: matriz de costos de envío
+         - oferta  [m]:  vector de oferta por origen
+         - demanda [n]:  vector de demanda por destino
+         - m, n:         dimensiones del problema
+         - valido:       boolean (false si hay algún campo vacío)
+
+       Retorna null si la tabla no existe aún.
+       ============================================================ */
+    function leerMatriz() {
+      const tabla = document.getElementById('transport-table');
+      if (!tabla || !tabla.tBodies[0]) return null;
+
+      const numOrigenes = parseInt(document.getElementById('num-origenes').value, 10);
+      const numDestinos = parseInt(document.getElementById('num-destinos').value, 10);
+
+      let costos = [];   // Matriz m×n de costos
+      let oferta = [];   // Vector de capacidades por almacén
+      let demanda = [];   // Vector de requerimientos por sucursal
+      let valido = true; // Bandera de integridad
+
+      // Leer costos y oferta (filas 0 .. numOrigenes-1)
+      for (let i = 0; i < numOrigenes; i++) {
+        costos[i] = [];
+        for (let j = 0; j < numDestinos; j++) {
+          const elem = document.getElementById(`costo-${i}-${j}`);
+          const val = parseFloat(elem ? elem.value : '');
+          if (isNaN(val)) { valido = false; }
+          costos[i][j] = isNaN(val) ? 0 : val;
+        }
+        const elemO = document.getElementById(`oferta-${i}`);
+        const vO = parseFloat(elemO ? elemO.value : '');
+        if (isNaN(vO)) { valido = false; }
+        oferta[i] = isNaN(vO) ? 0 : vO;
+      }
+
+      // Leer demandas (última fila)
+      for (let j = 0; j < numDestinos; j++) {
+        const elemD = document.getElementById(`demanda-${j}`);
+        const vD = parseFloat(elemD ? elemD.value : '');
+        if (isNaN(vD)) { valido = false; }
+        demanda[j] = isNaN(vD) ? 0 : vD;
+      }
+
+      return { costos, oferta, demanda, m: numOrigenes, n: numDestinos, valido };
+    }
+
+
+    /* ============================================================
+       FUNCIÓN: verificarEquilibrio(oferta, demanda)
+       ============================
+       Propósito: Comprueba si la suma total de oferta es igual
+       a la suma total de demanda. Un problema de transporte
+       DEBE estar equilibrado para tener solución factible.
+
+       Parámetros:
+         - oferta  []: array de capacidades de los orígenes
+         - demanda []: array de requerimientos de los destinos
+
+       Retorna: { equilibrado: bool, sumO: number, sumD: number }
+       ============================================================ */
+    function verificarEquilibrio(oferta, demanda) {
+      // Sumar cada vector con reduce()
+      const sumO = oferta.reduce((acum, v) => acum + v, 0);
+      const sumD = demanda.reduce((acum, v) => acum + v, 0);
+      return { equilibrado: sumO === sumD, sumO, sumD };
+    }
+
+
+    /* ============================================================
+       FUNCIÓN: calcularEsquinaNoroeste()
+       ============================
+       Propósito: Punto de entrada principal del algoritmo.
+       Orquesta la lectura de datos, validación de equilibrio,
+       ejecución del algoritmo y presentación de resultados.
+
+       Pasos generales:
+         1. Leer la matriz con leerMatriz().
+         2. Verificar equilibrio con verificarEquilibrio().
+            → Si no está equilibrado, mostrar alerta y detener.
+         3. Ejecutar el algoritmo con metodologiaEsquinaNoroeste().
+         4. Calcular el costo total sumando costo×unidades asignadas.
+         5. Actualizar la UI con los resultados.
+       ============================================================ */
+    function calcularEsquinaNoroeste() {
+      // ── Paso 1: Obtener los datos de la tabla ─────────────────
+      const datos = leerMatriz();
+      if (!datos) {
+        alert('Primero genera la tabla de transporte.');
+        return;
+      }
+
+      if (!datos.valido) {
+        alert('Por favor completa todos los campos de la tabla antes de calcular.');
+        return;
+      }
+
+      // ── Paso 2: Verificar que Oferta Total = Demanda Total ────
+      const { equilibrado, sumO, sumD } = verificarEquilibrio(datos.oferta, datos.demanda);
+
+      ocultarAlerta(); // Limpiar alerta previa
+
+      if (!equilibrado) {
+        // El problema NO está equilibrado: mostrar alerta y salir
+        mostrarAlerta(
+          `Oferta total (${sumO}) ≠ Demanda total (${sumD}). ` +
+          `Diferencia: ${Math.abs(sumO - sumD)} unidades. ` +
+          `Ajuste los valores para equilibrar el problema antes de continuar.`
+        );
+        return;
+      }
+
+      // ── Paso 3: Ejecutar el algoritmo ────────────────────────
+      const { asignaciones, pasos } = metodologiaEsquinaNoroeste(
+        datos.costos,
+        datos.oferta.slice(),   // .slice() para trabajar con copias
+        datos.demanda.slice(),  //  y no modificar los originales
+        datos.m,
+        datos.n
+      );
+
+      // ── Paso 4: Calcular el costo total ──────────────────────
+      let costoTotal = 0;
+      asignaciones.forEach(a => {
+        costoTotal += a.unidades * datos.costos[a.i][a.j];
+      });
+
+      // ── Paso 5: Actualizar la interfaz con resultados ─────────
+      actualizarResultadosUI(asignaciones, pasos, costoTotal);
+    }
+
+
+    /* ============================================================
+       FUNCIÓN: metodologiaEsquinaNoroeste(costos, oferta, demanda, m, n)
+       ============================
+       Propósito: Implementa el algoritmo central del Método de
+       la Esquina Noroeste para encontrar una solución básica
+       factible inicial al problema de transporte.
+
+       EXPLICACIÓN DEL ALGORITMO:
+         El método parte de la celda (0,0) — la esquina noroeste —
+         y asigna tantas unidades como sea posible sin violar la
+         oferta del origen actual ni la demanda del destino actual.
+         Luego se mueve SOLO HACIA LA DERECHA si se agotó la demanda,
+         o SOLO HACIA ABAJO si se agotó la oferta, hasta cubrir todo.
+
+       Parámetros:
+         - costos  [m][n]: matriz de costos (solo para referencia)
+         - oferta  [m]:    copia del vector de oferta (se modifica)
+         - demanda [n]:    copia del vector de demanda (se modifica)
+         - m, n:           dimensiones del problema
+
+       Retorna:
+         {
+           asignaciones: [{i, j, unidades}],  // lista de asignaciones
+           pasos:        [{paso, texto, i, j, unidades}]  // log de pasos
+         }
+       ============================================================ */
+    function metodologiaEsquinaNoroeste(costos, oferta, demanda, m, n) {
+      let asignaciones = []; // Registro de asignaciones realizadas
+      let pasos = []; // Log de pasos para mostrar al usuario
+
+      // Punteros de posición actual en la matriz
+      // Comenzamos siempre en la esquina NOROESTE: fila 0, columna 0
+      let i = 0; // Índice del origen (almacén) actual
+      let j = 0; // Índice del destino (sucursal) actual
+
+      let numeroPaso = 1; // Contador visible de pasos para el log
+
+      /* ────────────────────────────────────────────────────────────
+         BUCLE PRINCIPAL DEL ALGORITMO
+         --------------------------------
+         El bucle continúa mientras existan orígenes (i < m) Y
+         destinos (j < n) por procesar.
+
+         En cada iteración:
+           A) Calcular cuánto asignar: el mínimo entre la oferta
+              disponible en el almacén i y la demanda restante en
+              la sucursal j. Esto resuelve la restricción de
+              capacidad de ese par origen-destino.
+
+           B) Registrar la asignación en el array 'asignaciones'
+              y añadir una entrada al log de pasos.
+
+           C) Restar las unidades asignadas a oferta[i] y demanda[j].
+
+           D) Decidir el siguiente movimiento:
+              → Si oferta[i] == 0 y demanda[j] == 0 (ambos agotados
+                simultáneamente), avanzar en diagonal (caso degenerado):
+                subir fila (i++) Y avanzar columna (j++).
+              → Si solo oferta[i] == 0, el almacén quedó vacío:
+                bajar a la siguiente fila (i++). Mismo columna.
+              → Si solo demanda[j] == 0, la sucursal quedó satisfecha:
+                moverse a la siguiente columna (j++). Misma fila.
+              → Si ninguno es 0, seguimos en la misma celda (no ocurre
+                en práctica normal, pero protege contra errores).
+         ────────────────────────────────────────────────────────── */
+      while (i < m && j < n) {
+
+        // A) Determinar la cantidad a asignar en la celda (i, j)
+        //    → mínimo entre lo que el almacén puede dar y lo que
+        //      la sucursal necesita (regla central del método)
+        const unidades = Math.min(oferta[i], demanda[j]);
+
+        // B) Registrar la asignación si hay unidades que asignar
+        //    (unidades > 0 evita filas degeneradas con valores cero)
+        if (unidades > 0) {
+          // Guardar la asignación completa para el cálculo del costo
+          asignaciones.push({ i, j, unidades });
+
+          // Registrar el paso en lenguaje natural para el log
+          pasos.push({
+            paso: numeroPaso,
+            i,        // índice de fila (origen)
+            j,        // índice de columna (destino)
+            unidades,
+            texto: `Se envían <strong>${unidades} unidades</strong> desde Almacén ${i + 1} → Sucursal ${j + 1}`
+              + ` (oferta restante: ${oferta[i]}, demanda restante: ${demanda[j]})`,
+          });
+          numeroPaso++;
+        }
+
+        // C) Descontar las unidades asignadas del almacén y la sucursal
+        oferta[i] -= unidades;
+        demanda[j] -= unidades;
+
+        // D) Decidir hacia dónde moverse a continuación
+        if (oferta[i] === 0 && demanda[j] === 0) {
+          // Caso DEGENERADO: ambos se agotaron al mismo tiempo
+          // → Avanzar en diagonal para no atascarse
+          i++;
+          j++;
+        } else if (oferta[i] === 0) {
+          // El almacén 'i' está vacío → bajar a la siguiente fila
+          i++;
+        } else {
+          // La demanda de la sucursal 'j' está satisfecha → avanzar columna
+          j++;
+        }
+        /* FIN DEL BUCLE: en cada iteración garantizamos que al menos
+           uno de los índices avanza, por lo que el bucle termina. */
+      }
+
+      return { asignaciones, pasos };
+    }
+
+
+    /* ============================================================
+       FUNCIÓN: actualizarResultadosUI(asignaciones, pasos, costoTotal)
+       ============================
+       Propósito: Actualiza todos los elementos visuales de la
+       interfaz con los resultados del algoritmo:
+         - Muestra badges de unidades en las celdas asignadas.
+         - Muestra el costo total en grande.
+         - Imprime cada paso en el log con animación escalonada.
+
+       Parámetros:
+         - asignaciones []: array de objetos {i, j, unidades}
+         - pasos []:        array de objetos con descripción de pasos
+         - costoTotal:      número con el costo total calculado
+       ============================================================ */
+    function actualizarResultadosUI(asignaciones, pasos, costoTotal) {
+
+      // ── Limpiar badges previos de la tabla ────────────────────
+      document.querySelectorAll('.assign-badge').forEach(b => {
+        b.textContent = '';
+        b.classList.remove('visible');
+      });
+
+      // ── Mostrar unidades en cada celda asignada ───────────────
+      asignaciones.forEach((a, idx) => {
+        const badge = document.getElementById(`badge-${a.i}-${a.j}`);
+        if (badge) {
+          badge.textContent = `${a.unidades} u.`;
+          // Animación escalonada: un pequeño delay por cada celda
+          setTimeout(() => badge.classList.add('visible'), idx * 120);
+        }
+
+        // Resaltar ligeramente la celda asignada
+        const cell = document.getElementById(`cell-${a.i}-${a.j}`);
+        if (cell) cell.classList.add('highlighted');
+      });
+
+      // ── Mostrar el costo total ────────────────────────────────
+      const costDisplay = document.getElementById('cost-display');
+      const costoValor = document.getElementById('costo-total-valor');
+      costoValor.textContent = `$${costoTotal.toLocaleString('es-ES')}`;
+      costDisplay.style.display = 'block';
+
+      // ── Renderizar el log de pasos ─────────────────────────────
+      const logEntries = document.getElementById('log-entries');
+      logEntries.innerHTML = ''; // Limpiar log anterior
+
+      pasos.forEach((p, idx) => {
+        // Leer el costo unitario de la celda correspondiente
+        const costoUnitario = parseFloat(
+          document.getElementById(`costo-${p.i}-${p.j}`)?.value
+        ) || 0;
+        const subtotal = p.unidades * costoUnitario;
+
+        const entry = document.createElement('div');
+        entry.className = 'log-entry';
+        entry.style.animationDelay = `${idx * 100}ms`;
+        entry.style.opacity = '0';
+
+        entry.innerHTML = `
+          <span class="log-step">${String(p.paso).padStart(2, '0')}</span>
+          <span class="log-text">
+            ${p.texto}
+            <span style="
+              display:inline-flex; align-items:center; gap:0.3rem;
+              margin-left:0.5rem;
+              font-family:'JetBrains Mono',monospace;
+              font-size:0.75rem;
+              background:rgba(104,211,145,0.08);
+              border:1px solid rgba(104,211,145,0.2);
+              border-radius:4px;
+              padding:1px 7px;
+              color:var(--accent-success);
+              white-space:nowrap;
+            ">
+              ${p.unidades} &times; $${costoUnitario} = <strong>$${subtotal.toLocaleString('es-ES')}</strong>
+            </span>
+          </span>
+          <span class="log-units">✓ ${p.unidades} u.</span>
+        `;
+
+        logEntries.appendChild(entry);
+        setTimeout(() => { entry.style.opacity = ''; }, 10);
+      });
+
+      // ── Añadir resumen final al log ───────────────────────────
+      const summary = document.createElement('div');
+      summary.className = 'log-entry';
+      summary.style.marginTop = '0.5rem';
+      summary.style.borderTop = '1px solid var(--border-subtle)';
+      summary.style.paddingTop = '0.8rem';
+      summary.style.animationDelay = `${pasos.length * 100}ms`;
+      summary.innerHTML = `
+        <span class="log-step" style="background:rgba(104,211,145,0.15); border-color:rgba(104,211,145,0.4); color:var(--accent-success);">✓</span>
+        <span class="log-text">
+          <strong style="color:var(--text-primary)">Algoritmo finalizado.</strong>
+          Se realizaron <strong>${pasos.length}</strong> asignación(es) activa(s).
+          El costo total es <strong style="color:var(--accent-success)">$${costoTotal.toLocaleString('es-ES')}</strong>.
+        </span>
+      `;
+      logEntries.appendChild(summary);
+
+      // Scroll suave al área de resultados
+      setTimeout(() => {
+        document.getElementById('cost-display').scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }, 200);
+    }
+
+
+    /* ============================================================
+       FUNCIÓN: resetResultados()
+       ============================
+       Propósito: Limpia todos los resultados visuales de la UI
+       sin borrar los datos de la tabla de transporte:
+         - Quita todos los badges de asignación de las celdas.
+         - Quita los resaltados de las celdas.
+         - Oculta el display de costo total.
+         - Borra el log de pasos.
+         - Oculta las alertas de desequilibrio.
+       ============================================================ */
+    function resetResultados() {
+      // Limpiar badges y resaltados de la tabla
+      document.querySelectorAll('.assign-badge').forEach(b => {
+        b.textContent = '';
+        b.classList.remove('visible');
+      });
+      document.querySelectorAll('.cost-cell').forEach(c => {
+        c.classList.remove('highlighted');
+      });
+
+      // Ocultar display de costo y limpiar log
+      const costDisplay = document.getElementById('cost-display');
+      if (costDisplay) costDisplay.style.display = 'none';
+
+      const logEntries = document.getElementById('log-entries');
+      if (logEntries) {
+        logEntries.innerHTML = `
+          <p style="color:var(--text-muted); font-size:0.85rem; padding:0.5rem;">
+            Presiona <strong style="color:var(--text-secondary)">Calcular Ruta Óptima</strong> para ver el registro de pasos del algoritmo.
+          </p>`;
+      }
+
+      // Ocultar alerta de desequilibrio
+      ocultarAlerta();
+    }
+
+
+    /* ============================================================
+       FUNCIÓN: mostrarAlerta(mensaje)
+       ============================
+       Propósito: Muestra la alerta estilizada de error cuando el
+       problema no está equilibrado. Actualiza el mensaje dinámico
+       con el detalle de las sumas de oferta y demanda.
+
+       Parámetro:
+         - mensaje (string): texto descriptivo del desequilibrio
+       ============================================================ */
+    function mostrarAlerta(mensaje) {
+      const alerta = document.getElementById('alerta-desequilibrio');
+      const msg = document.getElementById('alerta-msg');
+      msg.innerHTML = mensaje;
+      alerta.classList.add('show');
+      // Hacer scroll a la alerta para que el usuario la vea
+      alerta.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+
+
+    /* ============================================================
+       FUNCIÓN: ocultarAlerta()
+       ============================
+       Propósito: Oculta la alerta de desequilibrio. Se llama
+       al inicio de cada cálculo para limpiar el estado previo.
+       ============================================================ */
+    function ocultarAlerta() {
+      const alerta = document.getElementById('alerta-desequilibrio');
+      if (alerta) alerta.classList.remove('show');
+    }
+
+
+    /* ============================================================
+       INICIALIZACIÓN – Generar tabla al cargar la página
+       ============================================================ */
+    document.addEventListener('DOMContentLoaded', () => {
+      // Generar la tabla por defecto con los datos de ejemplo
+      // al cargar la página, para que el usuario tenga una demostración
+      // inmediata sin necesidad de ingresar datos manualmente.
+      generarTabla();
+    });
+
+  </script>
+</body>
+
+</html>
